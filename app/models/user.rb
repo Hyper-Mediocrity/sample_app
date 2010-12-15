@@ -25,4 +25,38 @@ class User < ActiveRecord::Base
   validates :password, :presence => true,
                        :confirmation =>true, # automatically creates NAME_confirmation attribute
                        :length => { :within => 6..40 }
+
+  before_save :encrypt_password # callback
+  
+  def has_password?(submitted_password)
+    encrypted_password == encrypt(submitted_password)
+  end
+  
+  class << self # anything inside this block becomes a class method (don't need User. or self. in front)
+    def authenticate(email, submitted_password) # in this case = User.authenticate
+      user = find_by_email(email)
+      return nil  if user.nil? # couldn't find the user
+      return user if user.has_password?(submitted_password) # returns user object, or nil if pass wrong
+    end
+  end
+  
+  private 
+  
+    def encrypt_password
+      self.salt = make_salt if new_record? # only make salt if this is a new record
+      self.encrypted_password = encrypt(password)
+    end
+    
+    def encrypt(string)
+      secure_hash("#{salt}--#{string}")
+    end
+    
+    def make_salt
+      secure_hash("#{Time.now.utc}--#{password}")
+    end
+    
+    def secure_hash(string)
+      Digest::SHA2.hexdigest(string)
+    end
+
 end
