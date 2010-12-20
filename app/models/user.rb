@@ -1,5 +1,5 @@
 # == Schema Information
-# Schema version: 20101215061420
+# Schema version: 20101215065011
 #
 # Table name: users
 #
@@ -9,6 +9,7 @@
 #  created_at         :datetime
 #  updated_at         :datetime
 #  encrypted_password :string(255)
+#  salt               :string(255)
 #
 
 class User < ActiveRecord::Base
@@ -35,8 +36,12 @@ class User < ActiveRecord::Base
   class << self # anything inside this block becomes a class method (don't need User. or self. in front)
     def authenticate(email, submitted_password) # in this case = User.authenticate
       user = find_by_email(email)
-      return nil  if user.nil? # couldn't find the user
-      return user if user.has_password?(submitted_password) # returns user object, or nil if pass wrong
+      (user && user.has_password?(submitted_password)) ? user : nil
+    end
+    
+    def authenticate_with_salt(id, cookie_salt)
+      user = find_by_id(id)
+      (user && user.salt == cookie_salt) ? user : nil
     end
   end
   
