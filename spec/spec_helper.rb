@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'spork'
 
+
 Spork.prefork do
   # Loading more in this block will cause your tests to run faster. However, 
   # if you change any configuration or code from libraries loaded here, you'll
@@ -11,6 +12,11 @@ end
 Spork.each_run do
   # This code will be run each time you run your specs.
   
+  # reload FactoryGirl's factories - not working right now
+  #Factory.factories.clear
+  #Dir[Rails.root.join("spec/factories/**/*.rb")].each{|f| load f}
+  # reload routes
+  #SampleApp::Application.reload_routes!
 end
 
 # --- Instructions ---
@@ -53,4 +59,25 @@ RSpec.configure do |config|
   # examples within a transaction, remove the following line or assign false
   # instead of true.
   config.use_transactional_fixtures = true
+  
+  def test_sign_in(user)
+    controller.sign_in(user)
+  end
+  
+  def integration_sign_up(user)
+    visit signup_path
+    fill_in :name,         :with => user.name
+    fill_in :email,        :with => user.email
+    fill_in :password,     :with => user.password
+    fill_in :confirmation, :with => user.password_confirmation
+    click_button
+  end
+  
+  def integration_sign_in(user)
+    visit signin_path
+    fill_in :email,    :with => user.email
+    fill_in :password, :with => user.password
+    click_button
+  end
+  
 end
