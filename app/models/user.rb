@@ -41,12 +41,14 @@ class User < ActiveRecord::Base
 
   before_save :encrypt_password # callback
   
+  scope :admin, where(:admin => true) # creates User.admin method that returns array of all admin users
+  
   def has_password?(submitted_password)
     encrypted_password == encrypt(submitted_password)
   end
   
   def feed
-    Micropost.where("user_id = ?", id) # rails 3, parameterized SQL style
+    Micropost.from_users_followed_by(self)
   end
   
   def following?(followed)
