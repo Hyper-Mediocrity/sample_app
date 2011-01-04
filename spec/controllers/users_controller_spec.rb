@@ -372,7 +372,7 @@ describe UsersController do
       before(:each) do
         @user = test_sign_in(Factory(:user))
         @other_user = Factory(:user, :email => Factory.next(:email))
-        @user.follow(@other_user)
+        @user.follow!(@other_user)
       end
       
       it "should show user following" do
